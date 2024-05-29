@@ -24,7 +24,7 @@ void *naive_malloc(size_t size)
 	size_t i, align = MAX_TYPE_SIZE;
 	long page_size = sysconf(_SC_PAGESIZE);
 	size_t tot_size = 0, unused_size = 0;
-	void *chunk, *tmp;
+	void *chunk = NULL;
 
 	if (!start_heap) /* If first call */
 		start_heap = sbrk(0);
@@ -34,7 +34,9 @@ void *naive_malloc(size_t size)
 
 	/* Loop through already used chunks to get unused chunk (last one)*/
 	for (i = 0, chunk = start_heap; i < nb_chunks; i++)
-		chunk += *(size_t *)chunk; /* Go to next chunk by adding its size */
+		/* Go to next chunk by adding its size */
+		chunk =  (char *)chunk + *(size_t *)chunk;
+
 	/* If last chunk not current program break, then there must be unused mem */
 	unused_size = (chunk < sbrk(0)) ? *(size_t *)chunk : 0;
 	/* Loop adding page_size to total if not enough space */
@@ -45,7 +47,7 @@ void *naive_malloc(size_t size)
 	{
 		/* Without modifying chunk adress*/
 		if (unused_size)
-			tmp = sbrk(tot_size);
+			sbrk(tot_size);
 		/* chunk get new adress */
 		else
 			chunk = sbrk(tot_size);
@@ -53,8 +55,8 @@ void *naive_malloc(size_t size)
 
 	*(size_t *)chunk = size; /* Add to chunk header the chunk size */
 	/* Add to unused chunk header the unused size */
-	*(size_t *)(chunk + size) = tot_size + unused_size - size;
+	*(size_t *)((char *)chunk + size) = tot_size + unused_size - size;
 
 	nb_chunks++;
-	return (chunk + sizeof(size_t));
+	return ((char *)chunk + sizeof(size_t));
 }
