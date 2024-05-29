@@ -5,7 +5,7 @@
 /**
  * naive_malloc - naive version of malloc:
  *	dynamically allocates memory on the heap using sbrk
- * @size: number of bytes to allocate
+ * @size: number of bytes to allocate for the user
  * The function must return a pointer to the allocated memory
  * that is suitably aligned for any kind of variable
  * It should be able to:
@@ -13,7 +13,7 @@
  *			A size_t as the chunk header
  *			The size requested as parameter
  *		Allocate memory pages only
- * Return: the memory address newly allocated, or NULL on error
+ * Return: the memory address newly allocated
  *
  * Note: don't do this at home :)
  */

@@ -16,18 +16,20 @@ int main(void)
 
 	printf("Starting break is %p\n", sbrk(0));
 
-	for (i = 0; i < 10; i++)
+	for (i = 0; i < 20; i++)
 	{
 		void *chunk;
 
-		str = naive_malloc(10);
+		str = _malloc(1008);
 		strcpy(str, "Holberton");
 		str[9] = '\0';
 		printf("%p: %s, ", (void *)str, str);
-		chunk = (void *)(str - sizeof(size_t));
+		chunk = (void *)(str - 2 * sizeof(size_t));
 		printf("chunk addr: %p, ", (void *)chunk);
-		printf("size: %lu, ", *((size_t *)chunk));
+		printf("prev size: %lu, ", *(size_t *)chunk);
+		printf("size: %lu, ", *((size_t *)((char *)chunk + sizeof(size_t))));
 		printf("break: %p\n", sbrk(0));
+		free(str);
 	}
 
 	printf("Final break is %p\n", sbrk(0));
