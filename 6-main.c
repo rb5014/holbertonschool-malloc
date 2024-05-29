@@ -63,7 +63,7 @@ int main(void)
 	{
 		void *chunk;
 
-		str = _malloc(10);
+		str = naive_malloc(10);
 		strcpy(str, "Holberton");
 		str[9] = '\0';
 		printf("%p: %s, ", (void *)str, str);

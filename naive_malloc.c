@@ -11,7 +11,7 @@
  *
  * Note: don't do this at home :)
  */
-void *_malloc(size_t size)
+void *naive_malloc(size_t size);
 {
 	static void *start_heap;
 	static int nb_chunks;
