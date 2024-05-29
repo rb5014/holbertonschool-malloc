@@ -3,52 +3,58 @@
 #define MAX_TYPE_SIZE 8
 
 /**
- * malloc - naive version of malloc:
+ * naive_malloc - naive version of malloc:
  *	dynamically allocates memory on the heap using sbrk
  * @size: number of bytes to allocate
- *
+ * The function must return a pointer to the allocated memory
+ * that is suitably aligned for any kind of variable
+ * It should be able to:
+ *		Allocate enough memory to store
+ *			A size_t as the chunk header
+ *			The size requested as parameter
+ *		Allocate memory pages only
  * Return: the memory address newly allocated, or NULL on error
  *
  * Note: don't do this at home :)
  */
-void *naive_malloc(size_t size);
+void *naive_malloc(size_t size)
 {
 	static void *start_heap;
-	static int nb_chunks;
-	int i, align = MAX_TYPE_SIZE;
+	static size_t nb_chunks;
+	size_t i, align = MAX_TYPE_SIZE;
 	long page_size = sysconf(_SC_PAGESIZE);
 	size_t tot_size = 0, unused_size = 0;
 	void *chunk, *tmp;
 
-	/* Formula to align to 8 (biggest type size)*/
-	size = (size + (align - 1)) & -align;
-	size += sizeof(size_t);
-	if (!start_heap)
-	{
-		/* Get the total size to allocate that is a multiple of page size */
-		while (tot_size < size + sizeof(size_t))
-			tot_size += page_size;
+	if (!start_heap) /* If first call */
+		start_heap = sbrk(0);
 
-		start_heap = sbrk(tot_size);
-		*(size_t *)start_heap = size;
-		*(size_t *)(start_heap + size) = tot_size - size;
-		chunk = start_heap;
-	}
-	else
+	size = (size + (align - 1)) & -align; /* Align to 8 (biggest type size)*/
+	size += sizeof(size_t); /* Add header size */
+
+	/* Loop through already used chunks to get unused chunk (last one)*/
+	for (i = 0, chunk = start_heap; i < nb_chunks; i++)
+		chunk += *(size_t *)chunk; /* Go to next chunk by adding its size */
+	/* If last chunk not current program break, then there must be unused mem */
+	unused_size = (chunk < sbrk(0)) ? *(size_t *)chunk : 0;
+	/* Loop adding page_size to total if not enough space */
+	while (tot_size + unused_size < size + sizeof(size_t))
+		tot_size += page_size;
+
+	if (tot_size) /* We extend program break if unused isn't enough */
 	{
-		for (i = 0, chunk = start_heap; i < nb_chunks; i++)
-			chunk += *(size_t *)chunk; /* Go to next chunk by adding its size */
-		unused_size = (chunk < sbrk(0)) ? *(size_t *)chunk : 0;
-		tot_size = unused_size;
-		while (tot_size < size + sizeof(size_t))
-			tot_size += page_size;
-		if (tot_size > unused_size)
+		/* Without modifying chunk adress*/
+		if (unused_size)
 			tmp = sbrk(tot_size);
-		*(size_t *)chunk = size;
-		if (tot_size > size)
-			*(size_t *)(chunk + size) = tot_size - size;
+		/* chunk get new adress */
+		else
+			chunk = sbrk(tot_size);
 	}
-	nb_chunks++;
 
+	*(size_t *)chunk = size; /* Add to chunk header the chunk size */
+	/* Add to unused chunk header the unused size */
+	*(size_t *)(chunk + size) = tot_size + unused_size - size;
+
+	nb_chunks++;
 	return (chunk + sizeof(size_t));
 }
