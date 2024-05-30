@@ -26,6 +26,7 @@ void *_malloc(size_t size)
 		 chunk < sbrk(0) && (void *)((char *)chunk + chunk_size(chunk)) < sbrk(0);
 		 chunk = (char *)chunk + chunk_size(chunk))
 	{
+		printf("prev size: %lu\n", prev_chunk_size(chunk));
 		if (prev_chunk_size(chunk) >= size)
 		{
 			chunk = (char *)chunk - prev_chunk_size(chunk);

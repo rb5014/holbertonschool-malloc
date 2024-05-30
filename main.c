@@ -29,7 +29,8 @@ int main(void)
 		printf("prev size: %lu, ", *(size_t *)chunk);
 		printf("size: %lu, ", *((size_t *)((char *)chunk + sizeof(size_t))));
 		printf("break: %p\n", sbrk(0));
-		_free(str);
+		if (i == 2)
+			_free(str);
 	}
 
 	printf("Final break is %p\n", sbrk(0));
