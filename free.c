@@ -21,7 +21,13 @@ void _free(void *ptr)
 	prev_size = *(size_t *)chunk;
 	/* If previous one is already freed (prev_size != 0), merge both together */
 	if (prev_size)
+	{
+		void *prev_chunk = (void *)((char *)chunk - prev_size);
+
 		tot_size += prev_size;
+		/* Update previous chunk size */
+		*((char *)prev_chunk + SIZE_T) = tot_size;
+	}
 
 	/**
 	 * Update first part of next chunk's header
